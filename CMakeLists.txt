@@ -8,6 +8,9 @@ add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 add_subdirectory(External/bgfx.cmake)
 add_subdirectory(External/glfw)
 
-add_executable(Playground Src/main.cpp)
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS "src/*.cpp")
+file(GLOB_RECURSE headers CONFIGURE_DEPENDS "src/*.h")
+
+add_executable(Playground ${sources} ${headers})
 set_target_properties(Playground PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 target_link_libraries(Playground bgfx bx bimg glfw)
