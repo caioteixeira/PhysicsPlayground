@@ -12,5 +12,5 @@ file(GLOB_RECURSE sources CONFIGURE_DEPENDS "src/*.cpp")
 file(GLOB_RECURSE headers CONFIGURE_DEPENDS "src/*.h")
 
 add_executable(Playground ${sources} ${headers})
-set_target_properties(Playground PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+set_target_properties(Playground PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BUILD_DIR}")
 target_link_libraries(Playground bgfx bx bimg glfw)

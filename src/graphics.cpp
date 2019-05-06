@@ -1,6 +1,9 @@
 #include "graphics.h"
 
+#include <stdio.h>
+
 #include <bx/bx.h>
+#include <bx/string.h>
 #include <bgfx/platform.h>
 #include <GLFW/glfw3.h>
 #if BX_PLATFORM_LINUX
@@ -10,8 +13,16 @@
 #endif
 #include <GLFW/glfw3native.h>
 
+static void windowResizeCallback(GLFWwindow* window, int width, int height)
+{
+    bgfx::reset((uint32_t)width, (uint32_t)height, BGFX_RESET_VSYNC);
+    bgfx::setViewRect(graphics::kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+}
+
 int graphics::init(GLFWwindow* window)
 {
+    glfwSetWindowSizeCallback(window, windowResizeCallback);
+
     bgfx::renderFrame();
     // Initialize bgfx using the native window handle and window resolution.
     bgfx::Init init;
@@ -34,7 +45,7 @@ int graphics::init(GLFWwindow* window)
     }
 
     // Set view 0 to the same dimensions as the window and to clear the color buffer.
-    bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR);
+    bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
     bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 }
 
@@ -52,4 +63,50 @@ void graphics::renderFrame()
     bgfx::dbgTextPrintf(0, 2, 0x0f, "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters.", stats->width, stats->height, stats->textWidth, stats->textHeight);
     // Advance to next frame. Process submitted rendering primitives.
     bgfx::frame();
+}
+
+void graphics::shutdown()
+{
+    bgfx::shutdown();
+}
+
+bgfx::ShaderHandle graphics::loadShader(const char *FILENAME)
+{
+    char filePath[512];
+
+    const char* shaderPath = "???";
+
+    switch (bgfx::getRendererType())
+    {
+    case bgfx::RendererType::Noop:
+    case bgfx::RendererType::Direct3D9:  shaderPath = "shaders/dx9/";   break;
+    case bgfx::RendererType::Direct3D11:
+    case bgfx::RendererType::Direct3D12: shaderPath = "shaders/dx11/";  break;
+    case bgfx::RendererType::Gnm:        shaderPath = "shaders/pssl/";  break;
+    case bgfx::RendererType::Metal:      shaderPath = "shaders/metal/"; break;
+    case bgfx::RendererType::Nvn:        shaderPath = "shaders/nvn/";   break;
+    case bgfx::RendererType::OpenGL:     shaderPath = "shaders/glsl/";  break;
+    case bgfx::RendererType::OpenGLES:   shaderPath = "shaders/essl/";  break;
+    case bgfx::RendererType::Vulkan:     shaderPath = "shaders/spirv/"; break;
+
+    case bgfx::RendererType::Count:
+        BX_CHECK(false, "You should not be here!");
+        break;
+    }
+
+    bx::strCopy(filePath, BX_COUNTOF(filePath), shaderPath);
+    bx::strCat(filePath, BX_COUNTOF(filePath), FILENAME);
+    bx::strCat(filePath, BX_COUNTOF(filePath), ".bin");
+
+    FILE *file = fopen(filePath, "rb");
+    fseek(file, 0, SEEK_END);
+    long fileSize = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    const bgfx::Memory *mem = bgfx::alloc(fileSize + 1);
+    fread(mem->data, 1, fileSize, file);
+    mem->data[mem->size - 1] = '\0';
+    fclose(file);
+
+    return bgfx::createShader(mem);
 }
