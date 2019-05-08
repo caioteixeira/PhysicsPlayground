@@ -13,10 +13,51 @@
 #endif
 #include <GLFW/glfw3native.h>
 
+#include "simulationWorld.h"
+
+struct PosColorVertex
+{
+    float x;
+    float y;
+    float z;
+    uint32_t abgr;
+};
+
+static PosColorVertex cubeVertices[] =
+{
+    {-1.0f,  1.0f,  1.0f, 0xff000000 },
+    { 1.0f,  1.0f,  1.0f, 0xff0000ff },
+    {-1.0f, -1.0f,  1.0f, 0xff00ff00 },
+    { 1.0f, -1.0f,  1.0f, 0xff00ffff },
+    {-1.0f,  1.0f, -1.0f, 0xffff0000 },
+    { 1.0f,  1.0f, -1.0f, 0xffff00ff },
+    {-1.0f, -1.0f, -1.0f, 0xffffff00 },
+    { 1.0f, -1.0f, -1.0f, 0xffffffff },
+};
+
+static const uint16_t cubeTriList[] =
+{
+    0, 1, 2,
+    1, 3, 2,
+    4, 6, 5,
+    5, 6, 7,
+    0, 2, 4,
+    4, 2, 6,
+    1, 5, 3,
+    5, 7, 3,
+    0, 4, 1,
+    4, 5, 1,
+    2, 3, 6,
+    6, 3, 7,
+};
+
 static void windowResizeCallback(GLFWwindow* window, int width, int height)
 {
     bgfx::reset((uint32_t)width, (uint32_t)height, BGFX_RESET_VSYNC);
     bgfx::setViewRect(graphics::kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+
+    graphics::windowHeight = height;
+    graphics::windowWidth = width;
 }
 
 int graphics::init(GLFWwindow* window)
@@ -34,10 +75,11 @@ int graphics::init(GLFWwindow* window)
 #elif BX_PLATFORM_WINDOWS
     init.platformData.nwh = glfwGetWin32Window(window);
 #endif
-    int width, height;
-    glfwGetWindowSize(window, &width, &height);
-    init.resolution.width = (uint32_t)width;
-    init.resolution.height = (uint32_t)height;
+
+    glfwGetWindowSize(window, &graphics::windowWidth, &graphics::windowHeight);
+    init.resolution.width = (uint32_t)graphics::windowWidth;
+    init.resolution.height = (uint32_t)graphics::windowHeight;
+
     init.resolution.reset = BGFX_RESET_VSYNC;
     if (!bgfx::init(init))
     {
@@ -109,4 +151,51 @@ bgfx::ShaderHandle graphics::loadShader(const char *FILENAME)
     fclose(file);
 
     return bgfx::createShader(mem);
+}
+
+void graphics::renderElements(std::vector<Element>& elements)
+{
+    const bx::Vec3 at = { 0.0f, 0.0f,  0.0f };
+    const bx::Vec3 eye = { -1.0f, 1.0f, -10.0f };
+    float view[16];
+    bx::mtxLookAt(view, eye, at);
+    float proj[16];
+
+    bx::mtxProj(proj, 60.0f, float(graphics::windowWidth) / float(graphics::windowHeight), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+    bgfx::setViewTransform(0, view, proj);
+
+    for (auto& element : elements)
+    {
+        float transform[16];
+        bx::mtxSRT(transform, element.scale.x, element.scale.y, element.scale.z,
+            element.rotation.x, element.rotation.y, element.rotation.z,
+            element.position.x, element.position.y, element.position.z);
+
+        bgfx::setTransform(transform);
+
+        bgfx::setVertexBuffer(0, element.mesh.vertexBuffer);
+        bgfx::setIndexBuffer(element.mesh.indexBuffer);
+
+        bgfx::submit(0, element.mesh.program);
+    }
+}
+
+Mesh graphics::createCubeMesh()
+{
+
+    bgfx::VertexDecl pcvDecl;
+    pcvDecl.begin()
+        .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+        .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
+        .end();
+
+    Mesh mesh;
+    mesh.vertexBuffer = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), pcvDecl);
+    mesh.indexBuffer = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
+
+    bgfx::ShaderHandle vsh = graphics::loadShader("vs_cubes");
+    bgfx::ShaderHandle fsh = graphics::loadShader("fs_cubes");
+    mesh.program = bgfx::createProgram(vsh, fsh, true);
+
+    return mesh;
 }
