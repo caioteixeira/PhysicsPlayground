@@ -1,0 +1,59 @@
+# module Physx 4.1
+
+message(STATUS "Finding PhysX libraries")
+
+FIND_PATH(PhysX_INCLUDE_DIR PxPhysicsAPI.h
+  PATH_SUFFIXES include Include
+  PATHS
+  ${PHYSX_HOME}
+  $ENV{PHYSX_HOME}
+  ${CMAKE_SOURCE_DIR}/../PhysX/physx
+)
+message(STATUS "Physx Include Path: " ${PhysX_INCLUDE_DIR})
+
+if(MSVC)
+	if (CMAKE_SIZEOF_VOID_P EQUAL 8) 
+		set(PHYSX_BIN_ARCH_PREFIX "win.x86_64")
+		set(PHYSX_LIB_POSTFIX "_64")
+	else (CMAKE_SIZEOF_VOID_P EQUAL 8)
+		set(PHYSX_BIN_ARCH_PREFIX "win.x86_32")
+	endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
+	
+	message (STATUS ${PHYSX_BIN_ARCH_PREFIX})
+
+	if(MSVC_VERSION EQUAL 1800)
+		set(PHYSX_BIN_COMPILER_POSTFIX "vc120.mt")
+	elseif(MSVC_VERSION EQUAL 1900)
+		set(PHYSX_BIN_COMPILER_POSTFIX "vc140.mt")
+	elseif(MSVC_VERSION GREATER 1900)
+		set(PHYSX_BIN_COMPILER_POSTFIX "vc141.mt")
+	else()
+		return()
+	endif(MSVC_VERSION EQUAL 1800)	
+	set(PHYSX_LIB_CONFIG ${PHYSX_BIN_ARCH_PREFIX}.${PHYSX_BIN_COMPILER_POSTFIX})
+
+	message(STATUS ${PHYSX_LIB_CONFIG})
+endif (MSVC)
+
+set(PHYSX_BIN_RELEASE_PATH ${PhysX_INCLUDE_DIR}/../bin/${PHYSX_LIB_CONFIG}/release/)
+find_library(Physx_LIBRARY_RELEASE Physx${PHYSX_LIB_POSTFIX}
+	PATHS
+	${PHYSX_BIN_RELEASE_PATH}
+)
+message(STATUS "Physx Release Lib " ${Physx_LIBRARY_RELEASE})
+SET(PhysX_LIBRARIES
+  optimized ${Physx_LIBRARY_RELEASE}
+)
+
+set(PHYSX_BIN_DEBUG_PATH ${PhysX_INCLUDE_DIR}/../bin/${PHYSX_LIB_CONFIG}/checked/)
+find_library(Physx_LIBRARY_DEBUG Physx${PHYSX_LIB_POSTFIX}
+	PATHS
+	${PHYSX_BIN_DEBUG_PATH}
+)
+message(STATUS "Physx Debug Lib " ${Physx_LIBRARY_DEBUG})
+SET(PhysX_LIBRARIES
+  ${PhysX_LIBRARIES} debug ${Physx_LIBRARY_DEBUG}
+)
+
+
+
