@@ -2,12 +2,12 @@
 
 message(STATUS "Finding PhysX libraries")
 
-FIND_PATH(PhysX_INCLUDE_DIR PxPhysicsAPI.h
+find_path(PhysX_INCLUDE_DIR PxPhysicsAPI.h
   PATH_SUFFIXES include Include
   PATHS
   ${PHYSX_HOME}
   $ENV{PHYSX_HOME}
-  ${CMAKE_SOURCE_DIR}/../PhysX/physx
+  ${CMAKE_SOURCE_DIR}/../PhysX/physx/
 )
 message(STATUS "Physx Include Path: " ${PhysX_INCLUDE_DIR})
 
@@ -36,7 +36,7 @@ if(MSVC)
 endif (MSVC)
 
 set(PHYSX_BIN_RELEASE_PATH ${PhysX_INCLUDE_DIR}/../bin/${PHYSX_LIB_CONFIG}/release/)
-find_library(Physx_LIBRARY_RELEASE Physx${PHYSX_LIB_POSTFIX}
+find_library(Physx_LIBRARY_RELEASE PhysX${PHYSX_LIB_POSTFIX}
 	PATHS
 	${PHYSX_BIN_RELEASE_PATH}
 )
@@ -46,14 +46,42 @@ SET(PhysX_LIBRARIES
 )
 
 set(PHYSX_BIN_DEBUG_PATH ${PhysX_INCLUDE_DIR}/../bin/${PHYSX_LIB_CONFIG}/checked/)
-find_library(Physx_LIBRARY_DEBUG Physx${PHYSX_LIB_POSTFIX}
+find_library(Physx_LIBRARY_DEBUG PhysX${PHYSX_LIB_POSTFIX}
 	PATHS
 	${PHYSX_BIN_DEBUG_PATH}
 )
 message(STATUS "Physx Debug Lib " ${Physx_LIBRARY_DEBUG})
-SET(PhysX_LIBRARIES
+set(PhysX_LIBRARIES
   ${PhysX_LIBRARIES} debug ${Physx_LIBRARY_DEBUG}
 )
 
+foreach(component ${Physx_FIND_COMPONENTS})
+	message(STATUS "Component " ${component})
+	find_library(Physx_${component}_LIBRARY_DEBUG PhysX${component}${PHYSX_LIB_POSTFIX}
+		PATHS
+		${PHYSX_BIN_DEBUG_PATH}
+	)
+	message(STATUS "Physx ${component} Debug Lib"  ${Physx_${component}_LIBRARY_DEBUG})
+	if (Physx_${component}_LIBRARY_DEBUG)
+		set(PhysX_LIBRARIES
+		  ${PhysX_LIBRARIES}
+		  debug "${Physx_${component}_LIBRARY_DEBUG}"
+		)
+	endif()
 
+	find_library(Physx_${component}_LIBRARY_RELEASE PhysX${component}${PHYSX_LIB_POSTFIX}
+		PATHS
+		${PHYSX_BIN_RELEASE_PATH}
+	)
+	message(STATUS "Physx ${component} Release Lib"  ${Physx_${component}_LIBRARY_RELEASE})
+	if (Physx_${component}_LIBRARY_RELEASE)
+		set(PhysX_LIBRARIES
+		  ${PhysX_LIBRARIES}
+		  optimized "${Physx_${component}_LIBRARY_RELEASE}"
+		)
+	endif()
+endforeach()
 
+set(PxSHARED_INCLUDE_DIR ${PhysX_INCLUDE_DIR}/../../pxshared/include/)
+message(STATUS "PxShared Include Path: " ${PxSHARED_INCLUDE_DIR})
+set(PhysX_INCLUDE_DIR ${PhysX_INCLUDE_DIR} ${PxSHARED_INCLUDE_DIR})
