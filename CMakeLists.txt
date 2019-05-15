@@ -3,12 +3,17 @@ project (PhysxPlayground)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake/Modules")
 
+set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG=1 /MTd /Od")
+set(CMAKE_CXX_FLAGS_RELEASE "-DAK_OPTIMIZED=1 /MT")
+set(CMAKE_C_FLAGS_DEBUG "-DDEBUG=1 /MTd /Od")
+set(CMAKE_C_FLAGS_RELEASE "/MT")
+
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 add_subdirectory(External/bgfx.cmake)
 add_subdirectory(External/glfw)
 
-find_package(Physx REQUIRED Foundation)
+find_package(Physx REQUIRED Common Foundation Extensions PvdSDK)
 message(STATUS PHYSX_INCLUDE ${PhysX_INCLUDE_DIR})
 include_directories(${PhysX_INCLUDE_DIR})
 

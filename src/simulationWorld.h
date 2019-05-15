@@ -24,5 +24,7 @@ public:
     void render();
 
 private:
+    void initPhysics();
+
     std::vector<Element> mElements;
 };

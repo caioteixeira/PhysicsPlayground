@@ -45,7 +45,7 @@ SET(PhysX_LIBRARIES
   optimized ${Physx_LIBRARY_RELEASE}
 )
 
-set(PHYSX_BIN_DEBUG_PATH ${PhysX_INCLUDE_DIR}/../bin/${PHYSX_LIB_CONFIG}/checked/)
+set(PHYSX_BIN_DEBUG_PATH ${PhysX_INCLUDE_DIR}/../bin/${PHYSX_LIB_CONFIG}/debug/)
 find_library(Physx_LIBRARY_DEBUG PhysX${PHYSX_LIB_POSTFIX}
 	PATHS
 	${PHYSX_BIN_DEBUG_PATH}
@@ -57,7 +57,9 @@ set(PhysX_LIBRARIES
 
 foreach(component ${Physx_FIND_COMPONENTS})
 	message(STATUS "Component " ${component})
-	find_library(Physx_${component}_LIBRARY_DEBUG PhysX${component}${PHYSX_LIB_POSTFIX}
+	set(COMPONENT_LIBRARY_NAME PhysX${component}${PHYSX_LIB_POSTFIX} PhysX${component}_static${PHYSX_LIB_POSTFIX})
+
+	find_library(Physx_${component}_LIBRARY_DEBUG ${COMPONENT_LIBRARY_NAME}
 		PATHS
 		${PHYSX_BIN_DEBUG_PATH}
 	)
@@ -69,7 +71,7 @@ foreach(component ${Physx_FIND_COMPONENTS})
 		)
 	endif()
 
-	find_library(Physx_${component}_LIBRARY_RELEASE PhysX${component}${PHYSX_LIB_POSTFIX}
+	find_library(Physx_${component}_LIBRARY_RELEASE ${COMPONENT_LIBRARY_NAME}
 		PATHS
 		${PHYSX_BIN_RELEASE_PATH}
 	)
