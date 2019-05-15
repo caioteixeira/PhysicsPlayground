@@ -13,14 +13,10 @@ add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 add_subdirectory(External/bgfx.cmake)
 add_subdirectory(External/glfw)
 
-find_package(Physx REQUIRED Common Foundation Extensions PvdSDK)
-message(STATUS PHYSX_INCLUDE ${PhysX_INCLUDE_DIR})
-include_directories(${PhysX_INCLUDE_DIR})
-
 add_executable(Playground  src/main.cpp 
 							src/graphics.cpp 
 							src/graphics.h 
 							src/simulationWorld.h
 							src/simulationWorld.cpp)
 set_target_properties(Playground PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BUILD_DIR}")
-target_link_libraries(Playground ${PhysX_LIBRARIES} bgfx bx bimg glfw )
+target_link_libraries(Playground bgfx bx bimg glfw )
