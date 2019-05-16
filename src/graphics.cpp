@@ -156,7 +156,7 @@ bgfx::ShaderHandle graphics::loadShader(const char *FILENAME)
 void graphics::renderElements(std::vector<Element>& elements)
 {
     const bx::Vec3 at = { 0.0f, 0.0f,  0.0f };
-    const bx::Vec3 eye = { -1.0f, 1.0f, -10.0f };
+    const bx::Vec3 eye = { 1.0f, 1.0f, 10.0f };
     float view[16];
     bx::mtxLookAt(view, eye, at);
     float proj[16];
