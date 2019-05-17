@@ -17,6 +17,7 @@
 
 #include "graphics.h"
 #include "simulationWorld.h"
+#include <chrono>
 
 static bool s_showStats = false;
 
@@ -57,14 +58,19 @@ int main(int argc, char **argv)
     unsigned int counter = 0;
 
     SimulationWorld world;
-
+    auto lastFrame = std::chrono::high_resolution_clock::now();
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
         // Enable stats or debug text.
         bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
 
-        world.simulate();
+        auto now = std::chrono::high_resolution_clock::now();
+        auto delta = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(now - lastFrame).count() /
+            1000.0f;
+        lastFrame = now;
+
+        world.simulate(delta);
         world.render();
 
         graphics::renderFrame();

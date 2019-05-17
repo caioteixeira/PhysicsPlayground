@@ -26,7 +26,7 @@ class SimulationWorld
 public:
     btRigidBody* createCubePhysicsObject(const Element& element, float mass);
     SimulationWorld();
-    void simulate();
+    void simulate(float);
     void render();
 
 private:

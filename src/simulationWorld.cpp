@@ -36,35 +36,48 @@ SimulationWorld::SimulationWorld()
 {
     initPhysics();
 
+    //Create ground
     const auto mesh = graphics::createCubeMesh();
-
-    Element cube1;
-    cube1.position = bx::Vec3(2, 2, 0);
-    cube1.mesh = mesh;
-
-    const auto rigidBody = createCubePhysicsObject(cube1, 1);
-    mRigidBodies.push_back(rigidBody);
-    mElements.push_back(cube1);
 
     Element cube2;
     cube2.mesh = mesh;
-    cube2.scale = bx::Vec3(5, 0.3f, 5);
+    cube2.scale = bx::Vec3(50, 0.3f, 50);
     const auto rigidBody2 = createCubePhysicsObject(cube2, 0);
     mRigidBodies.push_back(rigidBody2);
     mElements.push_back(cube2);
-
 }
 
-void SimulationWorld::simulate()
+void SimulationWorld::simulate(float deltaTime)
 {
-    m_dynamicsWorld->stepSimulation(1.f / 60.f, 10);
+    const float interval = 0.7f;
+    static float remaining = 0.0f;
+
+    remaining += deltaTime;
+
+    if (remaining > interval)
+    {
+        const auto mesh = graphics::createCubeMesh();
+
+        Element cube1;
+        cube1.position = bx::Vec3(0, 5, 0);
+        cube1.mesh = mesh;
+
+        const auto rigidBody = createCubePhysicsObject(cube1, 1);
+        mRigidBodies.push_back(rigidBody);
+        mElements.push_back(cube1);
+
+        remaining = 0.0f;
+    }
+
+    m_dynamicsWorld->stepSimulation(deltaTime);
+    bgfx::dbgTextClear();
 
     for (int i = 0; i < mRigidBodies.size(); i++)
     {
         btTransform trans;
+        mRigidBodies[i]->getMotionState()->getWorldTransform(trans);
         auto origin = trans.getOrigin();
         auto rotation = trans.getRotation();
-        mRigidBodies[i]->getMotionState()->getWorldTransform(trans);
         mElements[i].position = bx::Vec3(origin.getX(), origin.getY(), origin.getZ());
         mElements[i].rotation.x = rotation.getX();
         mElements[i].rotation.y = rotation.getY();
