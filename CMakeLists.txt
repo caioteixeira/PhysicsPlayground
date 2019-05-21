@@ -24,8 +24,10 @@ add_subdirectory(External/bullet3)
 
 add_custom_target(
 	build-shaders
-	COMMAND $<TARGET_FILE:shaderc> --platform windows -p vs_5_0 -f ${CMAKE_CURRENT_SOURCE_DIR}/shaders/vs_cubes.sc -o ${CMAKE_CURRENT_BINARY_DIR}/shaders/vs_cubes.bin --type v -i ${BGFX_DIR}/src --varyingdef ${CMAKE_CURRENT_SOURCE_DIR}/shaders/varying.def.sc
-	COMMAND $<TARGET_FILE:shaderc> --platform windows -p ps_5_0 -f ${CMAKE_CURRENT_SOURCE_DIR}/shaders/fs_cubes.sc -o ${CMAKE_CURRENT_BINARY_DIR}/shaders/fs_cubes.bin --type f -i ${BGFX_DIR}/src --varyingdef ${CMAKE_CURRENT_SOURCE_DIR}/shaders/varying.def.sc
+	COMMAND $<TARGET_FILE:shaderc> --platform windows -p vs_5_0 -f ${CMAKE_CURRENT_SOURCE_DIR}/shaders/vs_cubes.sc 
+	-o ${CMAKE_CURRENT_BINARY_DIR}/shaders/vs_cubes.bin --type v -i ${BGFX_DIR}/src --varyingdef ${CMAKE_CURRENT_SOURCE_DIR}/shaders/varying.def.sc
+	COMMAND $<TARGET_FILE:shaderc> --platform windows -p ps_5_0 -f ${CMAKE_CURRENT_SOURCE_DIR}/shaders/fs_cubes.sc 
+	-o ${CMAKE_CURRENT_BINARY_DIR}/shaders/fs_cubes.bin --type f -i ${BGFX_DIR}/src --varyingdef ${CMAKE_CURRENT_SOURCE_DIR}/shaders/varying.def.sc
 )
 
 add_executable(Playground  src/main.cpp 
