@@ -160,9 +160,16 @@ void graphics::renderElements(std::vector<Element>& elements)
     }
 }
 
-Mesh graphics::createCubeMesh()
+Mesh graphics::createCubeMesh(uint32_t color = 0x33333333)
 {
-
+    const auto* memory = bgfx::alloc(sizeof PosColorVertex * 8);
+    PosColorVertex* vertices = (PosColorVertex*) memory->data;
+    memcpy(vertices, cubeVertices, sizeof PosColorVertex * 8);
+    for(int i = 0; i < 8; i++)
+    {
+        vertices[i].abgr = color;
+    }
+    
     bgfx::VertexDecl pcvDecl;
     pcvDecl.begin()
         .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
@@ -170,7 +177,7 @@ Mesh graphics::createCubeMesh()
         .end();
 
     Mesh mesh;
-    mesh.vertexBuffer = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), pcvDecl);
+    mesh.vertexBuffer = bgfx::createVertexBuffer(memory, pcvDecl);
     mesh.indexBuffer = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
 
     bgfx::ShaderHandle vsh = graphics::loadShader("vs_cubes");

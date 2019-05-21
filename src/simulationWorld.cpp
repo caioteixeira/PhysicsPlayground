@@ -37,7 +37,7 @@ SimulationWorld::SimulationWorld()
     initPhysics();
 
     //Create ground
-    const auto mesh = graphics::createCubeMesh();
+    const auto mesh = graphics::createCubeMesh(0x33333333);
 
     Element cube2;
     cube2.mesh = mesh;
@@ -49,14 +49,14 @@ SimulationWorld::SimulationWorld()
 
 void SimulationWorld::simulate(float deltaTime)
 {
-    const float interval = 0.7f;
+    const float interval = 0.2f;
     static float remaining = 0.0f;
 
     remaining += deltaTime;
 
     if (remaining > interval)
     {
-        const auto mesh = graphics::createCubeMesh();
+        const auto mesh = graphics::createCubeMesh(0x77733333);
 
         Element cube1;
         cube1.position = bx::Vec3(0, 5, 0);

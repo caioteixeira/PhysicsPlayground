@@ -28,5 +28,5 @@ namespace graphics
 
     void renderElements(std::vector<Element>& elements);
 
-    Mesh createCubeMesh();
+    Mesh createCubeMesh(uint32_t color);
 }
