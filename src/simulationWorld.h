@@ -15,6 +15,7 @@ struct Element
     bx::Vec3 position;
     bx::Vec3 scale;
     bx::Quaternion rotation;
+    float color[4];
     
     Mesh mesh;
 

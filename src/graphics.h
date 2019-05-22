@@ -1,6 +1,7 @@
 #pragma once
 #include <bgfx/bgfx.h>
 #include <vector>
+#include "bx/math.h"
 
 
 struct GLFWwindow;
@@ -19,6 +20,7 @@ namespace graphics
     static const bgfx::ViewId kClearView = 0;
     static int windowWidth;
     static int windowHeight;
+    static bgfx::UniformHandle kColorUniform;
 
     int init(GLFWwindow* window);
     void renderFrame();
@@ -28,5 +30,5 @@ namespace graphics
 
     void renderElements(std::vector<Element>& elements);
 
-    Mesh createCubeMesh(uint32_t color);
+    Mesh createCubeMesh();
 }

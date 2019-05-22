@@ -37,14 +37,18 @@ SimulationWorld::SimulationWorld()
     initPhysics();
 
     //Create ground
-    const auto mesh = graphics::createCubeMesh(0x33333333);
+    const auto mesh = graphics::createCubeMesh();
 
-    Element cube2;
-    cube2.mesh = mesh;
-    cube2.scale = bx::Vec3(50, 0.3f, 50);
-    const auto rigidBody2 = createCubePhysicsObject(cube2, 0);
+    Element cube;
+    cube.mesh = mesh;
+    cube.scale = bx::Vec3(50, 0.3f, 50);
+    cube.color[0] = 0.5;
+    cube.color[1] = 0.5;
+    cube.color[2] = 0.5;
+    cube.color[3] = 1.0;
+    const auto rigidBody2 = createCubePhysicsObject(cube, 0);
     mRigidBodies.push_back(rigidBody2);
-    mElements.push_back(cube2);
+    mElements.push_back(cube);
 }
 
 void SimulationWorld::simulate(float deltaTime)
@@ -56,15 +60,19 @@ void SimulationWorld::simulate(float deltaTime)
 
     if (remaining > interval)
     {
-        const auto mesh = graphics::createCubeMesh(0x77733333);
+        const auto mesh = graphics::createCubeMesh();
 
-        Element cube1;
-        cube1.position = bx::Vec3(0, 5, 0);
-        cube1.mesh = mesh;
+        Element cube;
+        cube.position = bx::Vec3(0, 5, 0);
+        cube.mesh = mesh;
+        cube.color[0] = 0.5;
+        cube.color[1] = 1.0;
+        cube.color[2] = 0.5;
+        cube.color[3] = 1.0;
 
-        const auto rigidBody = createCubePhysicsObject(cube1, 1);
+        const auto rigidBody = createCubePhysicsObject(cube, 1);
         mRigidBodies.push_back(rigidBody);
-        mElements.push_back(cube1);
+        mElements.push_back(cube);
 
         remaining = 0.0f;
     }

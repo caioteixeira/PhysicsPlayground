@@ -15,24 +15,23 @@
 
 #include "simulationWorld.h"
 
-struct PosColorVertex
+struct PosVertex
 {
     float x;
     float y;
     float z;
-    uint32_t abgr;
 };
 
-static PosColorVertex cubeVertices[] =
+static PosVertex cubeVertices[] =
 {
-    {-1.0f,  1.0f,  1.0f, 0xff000000 },
-    { 1.0f,  1.0f,  1.0f, 0xff0000ff },
-    {-1.0f, -1.0f,  1.0f, 0xff00ff00 },
-    { 1.0f, -1.0f,  1.0f, 0xff00ffff },
-    {-1.0f,  1.0f, -1.0f, 0xffff0000 },
-    { 1.0f,  1.0f, -1.0f, 0xffff00ff },
-    {-1.0f, -1.0f, -1.0f, 0xffffff00 },
-    { 1.0f, -1.0f, -1.0f, 0xffffffff },
+    {-1.0f,  1.0f,  1.0f },
+    { 1.0f,  1.0f,  1.0f },
+    {-1.0f, -1.0f,  1.0f },
+    { 1.0f, -1.0f,  1.0f },
+    {-1.0f,  1.0f, -1.0f },
+    { 1.0f,  1.0f, -1.0f },
+    {-1.0f, -1.0f, -1.0f },
+    { 1.0f, -1.0f, -1.0f },
 };
 
 static const uint16_t cubeTriList[] =
@@ -144,6 +143,8 @@ void graphics::renderElements(std::vector<Element>& elements)
     bx::mtxProj(proj, 60.0f, float(graphics::windowWidth) / float(graphics::windowHeight), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth, bx::Handness::Right);
     bgfx::setViewTransform(0, view, proj);
 
+    kColorUniform = bgfx::createUniform("u_color", bgfx::UniformType::Vec4);
+
     for (auto& element : elements)
     {
         float transform[16];
@@ -153,6 +154,8 @@ void graphics::renderElements(std::vector<Element>& elements)
 
         bgfx::setTransform(transform);
 
+        bgfx::setUniform(kColorUniform, element.color, 1);
+
         bgfx::setVertexBuffer(0, element.mesh.vertexBuffer);
         bgfx::setIndexBuffer(element.mesh.indexBuffer);
 
@@ -160,24 +163,15 @@ void graphics::renderElements(std::vector<Element>& elements)
     }
 }
 
-Mesh graphics::createCubeMesh(uint32_t color = 0x33333333)
+Mesh graphics::createCubeMesh()
 {
-    const auto* memory = bgfx::alloc(sizeof PosColorVertex * 8);
-    PosColorVertex* vertices = (PosColorVertex*) memory->data;
-    memcpy(vertices, cubeVertices, sizeof PosColorVertex * 8);
-    for(int i = 0; i < 8; i++)
-    {
-        vertices[i].abgr = color;
-    }
-    
     bgfx::VertexDecl pcvDecl;
     pcvDecl.begin()
         .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-        .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
         .end();
 
-    Mesh mesh;
-    mesh.vertexBuffer = bgfx::createVertexBuffer(memory, pcvDecl);
+    Mesh mesh{};
+    mesh.vertexBuffer = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), pcvDecl);
     mesh.indexBuffer = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
 
     bgfx::ShaderHandle vsh = graphics::loadShader("vs_cubes");
