@@ -154,10 +154,18 @@ void graphics::renderElements(std::vector<Element>& elements)
 
         bgfx::setTransform(transform);
 
-        bgfx::setUniform(kColorUniform, element.color, 1);
+        bgfx::setUniform(kColorUniform, &element.color, 1);
 
         bgfx::setVertexBuffer(0, element.mesh.vertexBuffer);
         bgfx::setIndexBuffer(element.mesh.indexBuffer);
+
+        bgfx::setState(0
+            | BGFX_STATE_WRITE_RGB
+            | BGFX_STATE_WRITE_A
+            | BGFX_STATE_WRITE_Z
+            | BGFX_STATE_DEPTH_TEST_LESS
+            | BGFX_STATE_MSAA
+        );
 
         bgfx::submit(0, element.mesh.program);
     }

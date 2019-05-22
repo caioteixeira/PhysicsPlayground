@@ -41,11 +41,8 @@ SimulationWorld::SimulationWorld()
 
     Element cube;
     cube.mesh = mesh;
-    cube.scale = bx::Vec3(50, 0.3f, 50);
-    cube.color[0] = 0.5;
-    cube.color[1] = 0.5;
-    cube.color[2] = 0.5;
-    cube.color[3] = 1.0;
+    cube.scale = bx::Vec3(50.f, 0.3f, 50.f);
+    cube.color = { 0.5f, 0.5f, 0.5f, 1.0f };
     const auto rigidBody2 = createCubePhysicsObject(cube, 0);
     mRigidBodies.push_back(rigidBody2);
     mElements.push_back(cube);
@@ -65,10 +62,7 @@ void SimulationWorld::simulate(float deltaTime)
         Element cube;
         cube.position = bx::Vec3(0, 5, 0);
         cube.mesh = mesh;
-        cube.color[0] = 0.5;
-        cube.color[1] = 1.0;
-        cube.color[2] = 0.5;
-        cube.color[3] = 1.0;
+        cube.color = {1.0f, 0.7f, 0.5f, 1.0f};
 
         const auto rigidBody = createCubePhysicsObject(cube, 1);
         mRigidBodies.push_back(rigidBody);

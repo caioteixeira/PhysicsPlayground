@@ -10,12 +10,21 @@
 #include "BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h"
 #include "BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
 
+struct Color
+{
+    float r;
+    float g;
+    float b;
+    float a;
+};
+
+
 struct Element
 {
     bx::Vec3 position;
     bx::Vec3 scale;
     bx::Quaternion rotation;
-    float color[4];
+    Color color;
     
     Mesh mesh;
 
