@@ -12,42 +12,76 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #endif
 #include <GLFW/glfw3native.h>
+#include <bx/pixelformat.h>
 
 #include "simulationWorld.h"
 
-struct PosVertex
+struct PosNormalVertex
 {
     float x;
     float y;
     float z;
+    uint32_t normal;
 };
 
-static PosVertex cubeVertices[] =
+inline uint32_t encodeNormalRgba8(float _x, float _y = 0.0f, float _z = 0.0f, float _w = 0.0f)
 {
-    {-1.0f,  1.0f,  1.0f },
-    { 1.0f,  1.0f,  1.0f },
-    {-1.0f, -1.0f,  1.0f },
-    { 1.0f, -1.0f,  1.0f },
-    {-1.0f,  1.0f, -1.0f },
-    { 1.0f,  1.0f, -1.0f },
-    {-1.0f, -1.0f, -1.0f },
-    { 1.0f, -1.0f, -1.0f },
+    const float src[] =
+    {
+        _x * 0.5f + 0.5f,
+        _y * 0.5f + 0.5f,
+        _z * 0.5f + 0.5f,
+        _w * 0.5f + 0.5f,
+    };
+    uint32_t dst;
+    bx::packRgba8(&dst, src);
+    return dst;
+}
+
+static PosNormalVertex cubeVertices[24] =
+{
+    {-1.0f,  1.0f,  1.0f, encodeNormalRgba8(0.0f,  0.0f,  1.0f) },
+    { 1.0f,  1.0f,  1.0f, encodeNormalRgba8(0.0f,  0.0f,  1.0f) },
+    {-1.0f, -1.0f,  1.0f, encodeNormalRgba8(0.0f,  0.0f,  1.0f) },
+    { 1.0f, -1.0f,  1.0f, encodeNormalRgba8(0.0f,  0.0f,  1.0f) },
+    {-1.0f,  1.0f, -1.0f, encodeNormalRgba8(0.0f,  0.0f, -1.0f) },
+    { 1.0f,  1.0f, -1.0f, encodeNormalRgba8(0.0f,  0.0f, -1.0f) },
+    {-1.0f, -1.0f, -1.0f, encodeNormalRgba8(0.0f,  0.0f, -1.0f) },
+    { 1.0f, -1.0f, -1.0f, encodeNormalRgba8(0.0f,  0.0f, -1.0f) },
+    {-1.0f,  1.0f,  1.0f, encodeNormalRgba8(0.0f,  1.0f,  0.0f) },
+    { 1.0f,  1.0f,  1.0f, encodeNormalRgba8(0.0f,  1.0f,  0.0f) },
+    {-1.0f,  1.0f, -1.0f, encodeNormalRgba8(0.0f,  1.0f,  0.0f) },
+    { 1.0f,  1.0f, -1.0f, encodeNormalRgba8(0.0f,  1.0f,  0.0f) },
+    {-1.0f, -1.0f,  1.0f, encodeNormalRgba8(0.0f, -1.0f,  0.0f) },
+    { 1.0f, -1.0f,  1.0f, encodeNormalRgba8(0.0f, -1.0f,  0.0f) },
+    {-1.0f, -1.0f, -1.0f, encodeNormalRgba8(0.0f, -1.0f,  0.0f) },
+    { 1.0f, -1.0f, -1.0f, encodeNormalRgba8(0.0f, -1.0f,  0.0f) },
+    { 1.0f, -1.0f,  1.0f, encodeNormalRgba8(1.0f,  0.0f,  0.0f) },
+    { 1.0f,  1.0f,  1.0f, encodeNormalRgba8(1.0f,  0.0f,  0.0f) },
+    { 1.0f, -1.0f, -1.0f, encodeNormalRgba8(1.0f,  0.0f,  0.0f) },
+    { 1.0f,  1.0f, -1.0f, encodeNormalRgba8(1.0f,  0.0f,  0.0f) },
+    {-1.0f, -1.0f,  1.0f, encodeNormalRgba8(-1.0f,  0.0f,  0.0f) },
+    {-1.0f,  1.0f,  1.0f, encodeNormalRgba8(-1.0f,  0.0f,  0.0f) },
+    {-1.0f, -1.0f, -1.0f, encodeNormalRgba8(-1.0f,  0.0f,  0.0f) },
+    {-1.0f,  1.0f, -1.0f, encodeNormalRgba8(-1.0f,  0.0f,  0.0f) },
 };
 
-static const uint16_t cubeTriList[] =
+static const uint16_t cubeTriList[36] =
 {
-    0, 1, 2,
-    1, 3, 2,
-    4, 6, 5,
-    5, 6, 7,
-    0, 2, 4,
-    4, 2, 6,
-    1, 5, 3,
-    5, 7, 3,
-    0, 4, 1,
-    4, 5, 1,
-    2, 3, 6,
-    6, 3, 7,
+     0,  2,  1,
+     1,  2,  3,
+     4,  5,  6,
+     5,  7,  6,
+
+     8, 10,  9,
+     9, 10, 11,
+    12, 13, 14,
+    13, 15, 14,
+
+    16, 18, 17,
+    17, 18, 19,
+    20, 21, 22,
+    21, 23, 22,
 };
 
 static void windowResizeCallback(GLFWwindow* window, int width, int height)
@@ -88,6 +122,10 @@ int graphics::init(GLFWwindow* window)
     // Set view 0 to the same dimensions as the window and to clear the color buffer.
     bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
     bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+
+    kColorUniform = bgfx::createUniform("u_color", bgfx::UniformType::Vec4);
+    kInvertedModelUniform = bgfx::createUniform("u_invertedModel", bgfx::UniformType::Mat4);
+    kViewPosUniform = bgfx::createUniform("u_viewPos", bgfx::UniformType::Vec4);
 }
 
 void graphics::renderFrame() 
@@ -143,7 +181,7 @@ void graphics::renderElements(std::vector<Element>& elements)
     bx::mtxProj(proj, 60.0f, float(graphics::windowWidth) / float(graphics::windowHeight), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth, bx::Handness::Right);
     bgfx::setViewTransform(0, view, proj);
 
-    kColorUniform = bgfx::createUniform("u_color", bgfx::UniformType::Vec4);
+    bgfx::setUniform(kViewPosUniform, &eye, 1);
 
     for (auto& element : elements)
     {
@@ -154,6 +192,12 @@ void graphics::renderElements(std::vector<Element>& elements)
 
         bgfx::setTransform(transform);
 
+        float invertedTransform[16];
+        bx::mtx3Inverse(invertedTransform, transform);
+        float transposed[16];
+        bx::mtxTranspose(transposed, transform);
+
+        bgfx::setUniform(kInvertedModelUniform, transposed, 1);
         bgfx::setUniform(kColorUniform, &element.color, 1);
 
         bgfx::setVertexBuffer(0, element.mesh.vertexBuffer);
@@ -176,6 +220,7 @@ Mesh graphics::createCubeMesh()
     bgfx::VertexDecl pcvDecl;
     pcvDecl.begin()
         .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+        .add(bgfx::Attrib::Normal, 4, bgfx::AttribType::Uint8, true, true)
         .end();
 
     Mesh mesh{};
