@@ -3,6 +3,8 @@
 #include <btBulletDynamicsCommon.h>
 #include "BulletCollision/CollisionDispatch/btBoxBoxDetector.h"
 
+#include <stdio.h>
+
 
 btRigidBody* SimulationWorld::createCubePhysicsObject(const Element& element, float mass)
 {
@@ -36,11 +38,11 @@ SimulationWorld::SimulationWorld()
 {
     initPhysics();
 
-    //Create ground
-    const auto mesh = graphics::createCubeMesh();
+    mCubeMesh = graphics::createCubeMesh();
 
+    //Create ground
     Element cube;
-    cube.mesh = mesh;
+    cube.mesh = mCubeMesh;
     cube.scale = bx::Vec3(50.f, 0.3f, 50.f);
     cube.color = { 0.5f, 0.5f, 0.5f, 1.0f };
     const auto rigidBody2 = createCubePhysicsObject(cube, 0);
@@ -50,18 +52,25 @@ SimulationWorld::SimulationWorld()
 
 void SimulationWorld::simulate(float deltaTime)
 {
-    const float interval = 0.2f;
+    const float interval = 0.5f;
     static float remaining = 0.0f;
 
     remaining += deltaTime;
 
     if (remaining > interval)
     {
-        const auto mesh = graphics::createCubeMesh();
+        const btVector3 from(0, 200, 0);
+        const btVector3 to(0, 0, 0);
+
+        btCollisionWorld::ClosestRayResultCallback closest(from, to);
+        m_dynamicsWorld->rayTest(from, to, closest);
+        auto hitY = closest.m_hitPointWorld.getY();
+
+        printf("Spawning at %f \n", hitY);
 
         Element cube;
-        cube.position = bx::Vec3(0, 5, 0);
-        cube.mesh = mesh;
+        cube.position = bx::Vec3(0, hitY + 4, 0);
+        cube.mesh = mCubeMesh;
         cube.color = {1.0f, 0.7f, 0.5f, 1.0f};
 
         const auto rigidBody = createCubePhysicsObject(cube, 1);

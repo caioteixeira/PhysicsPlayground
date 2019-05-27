@@ -51,4 +51,6 @@ private:
     std::vector<btRigidBody*> mRigidBodies;
 
     std::vector<Element> mElements;
+
+    Mesh mCubeMesh;
 };
