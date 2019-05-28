@@ -2,6 +2,7 @@
 
 #include <btBulletDynamicsCommon.h>
 #include "BulletCollision/CollisionDispatch/btBoxBoxDetector.h"
+#include <bx/rng.h>
 
 #include <stdio.h>
 
@@ -54,8 +55,11 @@ void SimulationWorld::simulate(float deltaTime)
 {
     const float interval = 0.5f;
     static float remaining = 0.0f;
+    static bx::RngMwc rng;
 
     remaining += deltaTime;
+
+    m_dynamicsWorld->updateAabbs();
 
     if (remaining > interval)
     {
@@ -71,7 +75,7 @@ void SimulationWorld::simulate(float deltaTime)
         Element cube;
         cube.position = bx::Vec3(0, hitY + 4, 0);
         cube.mesh = mCubeMesh;
-        cube.color = {1.0f, 0.7f, 0.5f, 1.0f};
+        cube.color = {bx::frnd(&rng), bx::frnd(&rng), bx::frnd(&rng), 1.0f};
 
         const auto rigidBody = createCubePhysicsObject(cube, 1);
         mRigidBodies.push_back(rigidBody);
