@@ -185,17 +185,12 @@ void graphics::renderElements(std::vector<Element>& elements)
 
     for (auto& element : elements)
     {
-        float transform[16];
-        bx::mtxSRT(transform, element.scale.x, element.scale.y, element.scale.z,
-            element.rotation.x, element.rotation.y, element.rotation.z,
-            element.position.x, element.position.y, element.position.z);
-
-        bgfx::setTransform(transform);
+        bgfx::setTransform(element.transform);
 
         float invertedTransform[16];
-        bx::mtx3Inverse(invertedTransform, transform);
+        bx::mtx3Inverse(invertedTransform, element.transform);
         float transposed[16];
-        bx::mtxTranspose(transposed, transform);
+        bx::mtxTranspose(transposed, invertedTransform);
 
         bgfx::setUniform(kInvertedModelUniform, transposed, 1);
         bgfx::setUniform(kColorUniform, &element.color, 1);

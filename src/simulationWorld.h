@@ -21,21 +21,18 @@ struct Color
 
 struct Element
 {
-    bx::Vec3 position;
-    bx::Vec3 scale;
-    bx::Quaternion rotation;
+    float transform[16];
     Color color;
     
     Mesh mesh;
-
-    Element() : position(0, 0, 0), scale(1, 1, 1){}
 };
 
 class SimulationWorld
 {
 public:
-    btRigidBody* createCubePhysicsObject(const Element& element, float mass);
     SimulationWorld();
+
+    void createCubeObject(const bx::Vec3 position, const bx::Vec3 scale, const Color color, float mass);
     void simulate(float);
     void render();
 
