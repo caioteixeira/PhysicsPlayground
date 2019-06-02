@@ -10,8 +10,8 @@ set(CMAKE_C_FLAGS_RELEASE "/MT")
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
-add_subdirectory(External/bgfx.cmake)
-add_subdirectory(External/glfw)
+add_subdirectory(External/bgfx.cmake EXCLUDE_FROM_ALL)
+add_subdirectory(External/glfw EXCLUDE_FROM_ALL)
 
 set(USE_MSVC_RUNTIME_LIBRARY_DLL ON)
 set(BUILD_SHARED_LIBS OFF)
@@ -20,7 +20,7 @@ set(BUILD_BULLET2_DEMOS OFF CACHE BOOL "no bullet2 demos.")
 set(BUILD_CPU_DEMOS OFF CACHE BOOL "no bullet demos.")
 set(BUILD_BULLET3 OFF CACHE BOOL "no bullet 3.")
 
-add_subdirectory(External/bullet3)
+add_subdirectory(External/bullet3 EXCLUDE_FROM_ALL)
 
 add_custom_target(
 	build-shaders
@@ -30,6 +30,7 @@ add_custom_target(
 	COMMAND $<TARGET_FILE:shaderc> --platform windows -p ps_5_0 -f ${CMAKE_CURRENT_SOURCE_DIR}/shaders/fs_cubes.sc 
 	-o ${CMAKE_CURRENT_BINARY_DIR}/shaders/fs_cubes.bin --type f -i ${BGFX_DIR}/src --varyingdef ${CMAKE_CURRENT_SOURCE_DIR}/shaders/varying.def.sc
 )
+add_dependencies(build-shaders shaderc)
 
 add_executable(Playground  src/main.cpp 
 							src/graphics.cpp 
