@@ -12,7 +12,7 @@ jobs:
       vmImage: 'vs2017-win2016'
   steps:
     - script: |
-        git clone https://github.com/caioteixeira/PhysicsPlayground.git
+        git clone https://github.com/caioteixeira/PhysicsPlayground.git --recursive
         mkdir build
         cd build
         cmake -G "Visual Studio 15 Win64" -DCMAKE_BUILD_TYPE=Release ../PhysicsPlayground
