@@ -2,17 +2,27 @@
 
 #include <btBulletDynamicsCommon.h>
 #include "BulletCollision/CollisionDispatch/btBoxBoxDetector.h"
+#include <bx/rng.h>
+
+#include <stdio.h>
 
 
-btRigidBody* SimulationWorld::createCubePhysicsObject(const Element& element, float mass)
+void SimulationWorld::createCubeObject(const bx::Vec3 position,  const bx::Vec3 scale, const Color color, float mass)
 {
-    btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(element.scale.x), btScalar(element.scale.y), btScalar(element.scale.z)));
+    Element cube;
+    cube.mesh = mCubeMesh;
+    bx::mtxSRT(cube.transform, scale.x, scale.y, scale.z,
+        0.0f, 0.0f, 0.0f,
+        position.x, position.y, position.z);
+    cube.color = color;
+
+    btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(scale.x), btScalar(scale.y), btScalar(scale.z)));
 
     mCollisionShapes.push_back(groundShape);
 
     btTransform groundTransform;
     groundTransform.setIdentity();
-    groundTransform.setOrigin(btVector3(element.position.x, element.position.y, element.position.z));
+    groundTransform.setOrigin(btVector3(position.x, position.y, position.z));
 
     //rigidbody is dynamic if and only if mass is non zero, otherwise static
     bool isDynamic = (mass > 0.0001f);
@@ -29,50 +39,37 @@ btRigidBody* SimulationWorld::createCubePhysicsObject(const Element& element, fl
     //add the body to the dynamics world
     m_dynamicsWorld->addRigidBody(body);
 
-    return body;
+    mRigidBodies.push_back(body);
+    mElements.push_back(cube);
 }
 
 SimulationWorld::SimulationWorld() 
 {
     initPhysics();
 
-    //Create ground
-    const auto mesh = graphics::createCubeMesh();
+    mCubeMesh = graphics::createCubeMesh();
 
-    Element cube;
-    cube.mesh = mesh;
-    cube.scale = bx::Vec3(50, 0.3f, 50);
-    cube.color[0] = 0.5;
-    cube.color[1] = 0.5;
-    cube.color[2] = 0.5;
-    cube.color[3] = 1.0;
-    const auto rigidBody2 = createCubePhysicsObject(cube, 0);
-    mRigidBodies.push_back(rigidBody2);
-    mElements.push_back(cube);
+    //Create ground
+    const Color color = { 0.5f, 0.5f, 0.5f, 1.0f };
+    createCubeObject(bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(50.f, 0.3f, 50.f), color, 0.f);
 }
 
 void SimulationWorld::simulate(float deltaTime)
 {
     const float interval = 0.2f;
     static float remaining = 0.0f;
+    static bx::RngMwc rng;
 
     remaining += deltaTime;
 
+    m_dynamicsWorld->updateAabbs();
+
     if (remaining > interval)
     {
-        const auto mesh = graphics::createCubeMesh();
+        const auto position = bx::Vec3(bx::frndh(&rng) * 10.f, 30.f, bx::frndh(&rng) * 10.f);
+        const Color color = {bx::frnd(&rng), bx::frnd(&rng), bx::frnd(&rng), 1.0f};
 
-        Element cube;
-        cube.position = bx::Vec3(0, 5, 0);
-        cube.mesh = mesh;
-        cube.color[0] = 0.5;
-        cube.color[1] = 1.0;
-        cube.color[2] = 0.5;
-        cube.color[3] = 1.0;
-
-        const auto rigidBody = createCubePhysicsObject(cube, 1);
-        mRigidBodies.push_back(rigidBody);
-        mElements.push_back(cube);
+        createCubeObject(position, bx::Vec3(1.0f), color, 1);
 
         remaining = 0.0f;
     }
@@ -80,17 +77,12 @@ void SimulationWorld::simulate(float deltaTime)
     m_dynamicsWorld->stepSimulation(deltaTime);
     bgfx::dbgTextClear();
 
-    for (int i = 0; i < mRigidBodies.size(); i++)
+    for (size_t i = 1; i < mRigidBodies.size(); i++)
     {
         btTransform trans;
+
         mRigidBodies[i]->getMotionState()->getWorldTransform(trans);
-        auto origin = trans.getOrigin();
-        auto rotation = trans.getRotation();
-        mElements[i].position = bx::Vec3(origin.getX(), origin.getY(), origin.getZ());
-        mElements[i].rotation.x = rotation.getX();
-        mElements[i].rotation.y = rotation.getY();
-        mElements[i].rotation.z = rotation.getZ();
-        mElements[i].rotation.w = rotation.getW();
+        trans.getOpenGLMatrix(mElements[i].transform);
     }
 }
 

@@ -21,6 +21,8 @@ namespace graphics
     static int windowWidth;
     static int windowHeight;
     static bgfx::UniformHandle kColorUniform;
+    static bgfx::UniformHandle kInvertedModelUniform;
+    static bgfx::UniformHandle kViewPosUniform;
 
     int init(GLFWwindow* window);
     void renderFrame();
